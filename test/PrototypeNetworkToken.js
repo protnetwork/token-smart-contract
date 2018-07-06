@@ -11,6 +11,8 @@ contract(PrototypeNetworkToken,function(accounts){
 
     var value = web3.toWei(10000,"ether");
 
+    var valuePercent40 = web3.toWei(4000,"ether")
+
     var prot;
 
     it("TotalSupply should be 2100000000",function(){
@@ -35,14 +37,24 @@ contract(PrototypeNetworkToken,function(accounts){
     it("Transfer 10000 prot to " + user, function(){
         PrototypeNetworkToken.deployed().then(function(instance){
             prot = instance;
-            return instance.transfer.call(user,value,{from:owner});
+            return instance.transfer(user,value,{from:owner});
         }).then(function(){
             return prot.balanceOf.call(user)
         }).then(function (balance) {
-            console.log(balance.toNumber())
+             console.log(balance.toNumber())
             assert.equal(value,balance.toNumber(),"Owner is not right")
         })
     });
 
+    it("Test lock 40% of 10000 at one stage",function(){
+        PrototypeNetworkToken.deployed().then(function(instance){
+            prot = instance;
+            return instance.issueToken(user,value,{from:owner,gas:4700000})
+        }).then(function(){
+            return prot.available.call(user);
+        }).then(function(avail){
+            assert.equal(valuePercent40,avail.toNumber(),"Lock wrong")
+        })
+    })
 
 })
