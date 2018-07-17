@@ -7,7 +7,9 @@ contract(PrototypeNetworkToken,function(accounts){
 
     var owner = accounts[0]
 
-    var user = accounts[1]
+    var user1 = accounts[1]
+
+    var user2 = accounts[2]
 
     var value = web3.toWei(10000,"ether");
 
@@ -34,24 +36,24 @@ contract(PrototypeNetworkToken,function(accounts){
         })
     });
 
-    it("Transfer 10000 prot to " + user, function(){
+    it("Transfer 10000 prot to " + user1, function(){
         PrototypeNetworkToken.deployed().then(function(instance){
             prot = instance;
-            return instance.transfer(user,value,{from:owner});
+            return instance.transfer(user1,value,{from:owner});
         }).then(function(){
-            return prot.balanceOf.call(user)
+            return prot.balanceOf.call(user1)
         }).then(function (balance) {
              console.log(balance.toNumber())
-            assert.equal(value,balance.toNumber(),"Owner is not right")
+            assert.equal(value,balance.toNumber(),"Transfer 10000 prot to " + user1 + " is not right")
         })
     });
 
     it("Test lock 40% of 10000 at one stage",function(){
         PrototypeNetworkToken.deployed().then(function(instance){
             prot = instance;
-            return instance.issueToken(user,value,{from:owner,gas:4700000})
+            return instance.issueToken(user2,value,{from:owner,gas:4700000})
         }).then(function(){
-            return prot.available.call(user);
+            return prot.available.call(user2);
         }).then(function(avail){
             assert.equal(valuePercent40,avail.toNumber(),"Lock wrong")
         })
