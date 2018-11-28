@@ -11,8 +11,8 @@ contract Lock is StandardToken, Ownable{
     mapping(address => uint256) public usedBalance;
 
     function availablePercent(address _to) internal constant returns (uint256) {
-        uint256 percent = 40;
-        percent += ((now - lockStartTime[_to]) / 10 minutes ) * 20;
+        uint256 percent = 25;
+        percent += ((now - lockStartTime[_to]) / 90 days ) * 25;
         if(percent > 100) {
             percent = 100;
         }
@@ -21,6 +21,7 @@ contract Lock is StandardToken, Ownable{
 
     function issueToken(address _to,uint256 _value) public onlyOwner {
         require(super.transfer(_to,_value) ==  true);
+        require(lockStartTime[_to] == 0);
         lockedBalance[_to] = lockedBalance[_to].add(_value);
         lockStartTime[_to] = block.timestamp;
     }
@@ -34,6 +35,13 @@ contract Lock is StandardToken, Ownable{
         return avail ;
     }
 
+    function totalAvailable(address _to) public constant returns (uint256){
+        uint256 avail1 = available(_to);
+        uint256 avail2 = balances[_to].add(usedBalance[_to]).sub(lockedBalance[_to]);
+        uint256 totalAvail = avail1.add(avail2);
+        return totalAvail;
+    }
+
     function lockTransfer(address _to, uint256 _value) internal returns (bool) {
         uint256 avail1 = available(msg.sender);
         uint256 avail2 = balances[msg.sender].add(usedBalance[msg.sender]).sub(lockedBalance[msg.sender]);
@@ -44,9 +52,9 @@ contract Lock is StandardToken, Ownable{
             if(_value > avail2){
                 usedBalance[msg.sender] = usedBalance[msg.sender].add(_value).sub(avail2);
             }
-        }
-        if(usedBalance[msg.sender] >= lockedBalance[msg.sender]) {
-            delete lockStartTime[msg.sender];
+            if(usedBalance[msg.sender] >= lockedBalance[msg.sender]) {
+                delete lockStartTime[msg.sender];
+            }
         }
         return ret;
     }
@@ -61,9 +69,9 @@ contract Lock is StandardToken, Ownable{
             if(_value > avail2){
                 usedBalance[_from] = usedBalance[_from].add(_value).sub(avail2);
             }
-        }
-        if(usedBalance[_from] >= lockedBalance[_from]) {
-            delete lockStartTime[_from];
+            if(usedBalance[_from] >= lockedBalance[_from]) {
+                delete lockStartTime[_from];
+            }
         }
         return ret;
     }
